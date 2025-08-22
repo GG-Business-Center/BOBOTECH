@@ -1,0 +1,11 @@
+{
+    "name": "bobo-tech-api",
+    "version": "1.0.0",
+    "description": "API for Bobo Tech",
+    "dependencies": {
+      "mongodb": "^4.1.3"
+    },
+    "scripts": {
+      "netlify:functions": "npm install mongodb --prefix netlify/functions"
+    }
+  }
