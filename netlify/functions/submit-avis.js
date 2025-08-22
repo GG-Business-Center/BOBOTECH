@@ -24,8 +24,8 @@ exports.handler = async (event, context) => {
     const client = new MongoClient(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
     await client.connect();
 
-    const db = client.db('avis');
-    const collection = db.collection('client');
+    const db = client.db('Business'); // Nom de la base de données mis à jour
+    const collection = db.collection('avis'); // Nom de la collection mis à jour
 
     const newAvis = {
       message: data.message,

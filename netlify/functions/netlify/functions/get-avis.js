@@ -12,8 +12,8 @@ exports.handler = async (event, context) => {
         client = new MongoClient(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
         await client.connect();
 
-        const db = client.db('avis');
-        const collection = db.collection('client');
+        const db = client.db('Business'); // Nom de la base de données mis à jour
+        const collection = db.collection('avis'); // Nom de la collection mis à jour
 
         // Récupère les avis du plus récent au plus ancien
         const avis = await collection.find().sort({ date: -1 }).toArray();
