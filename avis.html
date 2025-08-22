@@ -161,7 +161,7 @@
                 <p>Aucun avis n'a encore été publié.</p>
                 <p>Soyez le premier à laisser le vôtre !</p>
             </div>
-            </div>
+        </div>
 
         <form class="avis-form" id="avisForm">
             <h3>Laissez votre avis</h3>
@@ -177,73 +177,76 @@
             const avisList = document.getElementById('avisList');
             const noAvisMessage = document.querySelector('.no-avis-message');
 
+            const API_URL = '/.netlify/functions';
+
             // Fonction pour afficher un avis sur la page
             const displayAvis = (avis) => {
                 const avisItem = document.createElement('div');
                 avisItem.classList.add('avis-item');
                 avisItem.innerHTML = `
-                    <p>${avis.content}</p>
-                    <span class="avis-date">${avis.date}</span>
+                    <p>${avis.message}</p>
+                    <span class="avis-date">${new Date(avis.date).toLocaleDateString('fr-FR')}</span>
                 `;
                 avisList.prepend(avisItem);
             };
 
-            // Fonction pour charger les avis existants (simulée ici)
-            const loadAvis = () => {
-                // Dans une vraie application, ici on ferait une requête (fetch)
-                // à notre serveur pour récupérer les avis depuis MongoDB.
-                // Exemple de données simulées :
-                const storedAvis = [
-                    { content: "J'ai adoré ma montre ! Service au top.", date: "2024/05/18" },
-                    { content: "Super produit, la batterie est très bonne. Merci Bobo Tech !", date: "2024/05/17" }
-                ];
+            // Fonction pour charger les avis existants depuis la base de données
+            const loadAvis = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/get-avis`);
+                    const avis = await response.json();
 
-                if (storedAvis.length > 0) {
-                    noAvisMessage.style.display = 'none';
-                    storedAvis.forEach(avis => displayAvis(avis));
-                } else {
+                    if (avis.length > 0) {
+                        noAvisMessage.style.display = 'none';
+                        // Affiche les avis du plus récent au plus ancien
+                        avis.forEach(item => displayAvis(item));
+                    } else {
+                        noAvisMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du chargement des avis:', error);
+                    noAvisMessage.innerHTML = '<p style="color: red;">Impossible de charger les avis. Veuillez réessayer plus tard.</p>';
                     noAvisMessage.style.display = 'block';
                 }
             };
 
-            // Événement de soumission du formulaire
+            // Événement de soumission du formulaire pour enregistrer un nouvel avis
             avisForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const avisContent = avisInput.value.trim();
+                const submitButton = avisForm.querySelector('button[type="submit"]');
 
                 if (avisContent) {
-                    const newAvis = {
-                        content: avisContent,
-                        date: new Date().toLocaleDateString('fr-FR')
-                    };
-                    
-                    // Ici, vous devrez envoyer `newAvis` à votre serveur.
-                    // Exemple de requête (cette partie nécessite un serveur configuré) :
-                    /*
+                    submitButton.disabled = true; // Désactive le bouton pour éviter les doubles clics
+                    submitButton.textContent = 'Envoi en cours...';
+
                     try {
-                        const response = await fetch('/api/avis', {
+                        const response = await fetch(`${API_URL}/submit-avis`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(newAvis)
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ message: avisContent }),
                         });
+
+                        const result = await response.json();
+
                         if (response.ok) {
-                            // Afficher l'avis si l'enregistrement a réussi
-                            displayAvis(newAvis);
-                            avisInput.value = ''; // Réinitialiser l'input
-                            noAvisMessage.style.display = 'none'; // Cacher le message si c'est le premier avis
+                            alert(result.message);
+                            avisInput.value = ''; // Réinitialise l'input
+                            // Ajoute le nouvel avis à la liste
+                            displayAvis({ message: avisContent, date: new Date().toISOString() });
+                            noAvisMessage.style.display = 'none'; // Cache le message si c'est le premier avis
                         } else {
-                            alert('Erreur lors de l\'envoi de votre avis. Veuillez réessayer.');
+                            alert(`Erreur: ${result.message}`);
                         }
                     } catch (error) {
-                        console.error('Erreur:', error);
-                        alert('Erreur de connexion. L\'avis n\'a pas pu être envoyé.');
+                        console.error('Erreur de soumission de l\'avis:', error);
+                        alert('Une erreur est survenue. Veuillez réessayer.');
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Envoyer mon avis';
                     }
-                    */
-
-                    // Pour l'instant, sans serveur, on l'affiche directement
-                    displayAvis(newAvis);
-                    avisInput.value = '';
-                    noAvisMessage.style.display = 'none';
                 }
             });
 
