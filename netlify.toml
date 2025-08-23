@@ -2,4 +2,8 @@
   node_bundler = "esbuild"
 
 [[plugins]]
-  package = "netlify-plugin-image-optim"
+package = "netlify-plugin-image-optim"
+  [plugins.inputs]
+  # Exemple de configuration minimale
+  compress_images = true
+  post = true
